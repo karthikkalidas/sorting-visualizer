@@ -1,12 +1,15 @@
 #include <vector>
 #include <string>
+#include <chrono>
+#include <thread>
 #include "raylib.h"
+#include <iostream>
 
 #define ScreenWidth 1200
 #define ScreenHeight 800
 #define MinScreenWidth 500
 #define MinScreenHeight 500
-#define NumberOfPillars 50
+#define NumberOfPillars 1000
 #define FPS 120
 
 // Pillar states
@@ -55,10 +58,11 @@ class Button{
     }
 };
 
-Color FindColorForPillar(int &state){};
-void DrawVector(std::vector<Pillar> &Pillars){};
-void RandomizeVector(std::vector<Pillar> &Pillars){};
-void BubbleSort(std::vector<Pillar> &Pillars){};
+Color FindColorForPillar(int &state);
+void DrawVector(std::vector<Pillar> &Pillars);
+void RandomizeVector(std::vector<Pillar> &Pillars);
+void BubbleSort(std::vector<Pillar> &Pillars);
+void QuickSort(std::vector<Pillar> &Pillars, int low, int high);
 
 Color FindColorForPillar(int &state){
     switch (state){
@@ -87,37 +91,61 @@ void RandomizeVector(std::vector<Pillar> &Pillars){
     for(int i=0; i < NumberOfPillars; ++i){
         Pillars[i].height = {GetRandomValue(40, MinScreenWidth -10)};
     }
-}
+} 
 
 void BubbleSort(std::vector<Pillar> &Pillars){
-    int endingPoint = NumberOfPillars;
-    bool swapped = false;
-    do{
-        swapped = false;
-        for (int i=0; i<endingPoint-1; ++i){
-            Pillars[i].state = SELECTED;
+    auto start = std::chrono::high_resolution_clock::now();
+    for(int i=0; i<NumberOfPillars-1; ++i){
+        for(int j=0; j<NumberOfPillars-i-1; ++j){
+            Pillars[j].state = SELECTED;
 
-            if (Pillars[i].height > Pillars[i+1].height){
-                std::swap(Pillars[i], Pillars[i+1]);
-                swapped = true;
+            if (Pillars[j].height > Pillars[j+1].height){
+                std::swap(Pillars[j], Pillars[j+1]);
             }
             BeginDrawing();
             ClearBackground(WHITE);
 
-            for(int k=NumberOfPillars-1; k>=NumberOfPillars; k--)
+            for(int k=NumberOfPillars-1; k>=NumberOfPillars-i; --k)
                 Pillars[k].state = SORTED;
 
             DrawVector(Pillars);
 
-            for (int k = i; k >= 0; k--)
-                    Pillars[k].state = NORMAL;
+            for (int k = j; k >= 0; --k)
+                Pillars[k].state = NORMAL;
                     
             EndDrawing();
         }
-        endingPoint--;
-    } while(swapped);
-    DrawVector(Pillars);
-} 
+    }
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    std::cout<<"BubbleSort Time:"<<duration.count()<<std::endl;
+}
+ 
+void QuickSort(std::vector<Pillar> &Pillars, int low=0, int high=NumberOfPillars-1){
+    if (low < high){
+        int i = (low - 1);
+        for (int j = low; j <= high - 1; j++)
+        {
+            if (Pillars[j].height < Pillars[high].height)
+            {
+                i++;
+                std::swap(Pillars[i], Pillars[j]);
+            }
+        }
+        std::swap(Pillars[i + 1], Pillars[high]);
+
+        BeginDrawing();
+        ClearBackground(WHITE);
+
+        DrawVector(Pillars);
+        // std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+        EndDrawing();
+
+        QuickSort(Pillars, low, i);
+        QuickSort(Pillars, i+2, high);
+    }
+}
 
 int main(){
     // Window Configuration
@@ -128,14 +156,23 @@ int main(){
 
     std::vector<Pillar> Pillars(NumberOfPillars);  
     RandomizeVector(Pillars);
+    std::vector<Pillar> Pillars_Copy = Pillars;
 
     while(!WindowShouldClose()){
         BeginDrawing();
         ClearBackground(LIGHTGRAY);
         DrawVector(Pillars);
+        
+        // BubbleSort(Pillars);
+
+        auto start = std::chrono::high_resolution_clock::now();
+        QuickSort(Pillars_Copy);
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+        std::cout<<"QuickSort Time: "<<duration.count()<<std::endl;
+
         EndDrawing();
+        CloseWindow();
     }
-    
-    CloseAudioDevice();
 }
 

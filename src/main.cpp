@@ -93,58 +93,19 @@ void RandomizeVector(std::vector<Pillar> &Pillars){
     }
 } 
 
-void BubbleSort(std::vector<Pillar> &Pillars){
-    auto start = std::chrono::high_resolution_clock::now();
-    for(int i=0; i<NumberOfPillars-1; ++i){
-        for(int j=0; j<NumberOfPillars-i-1; ++j){
-            Pillars[j].state = SELECTED;
+void visualizeVector(std::vector<Pillar> &Pillars){
+    BeginDrawing();
+    ClearBackground(WHITE);
 
-            if (Pillars[j].height > Pillars[j+1].height){
-                std::swap(Pillars[j], Pillars[j+1]);
-            }
-            BeginDrawing();
-            ClearBackground(WHITE);
+    for(int k=NumberOfPillars-1; k>=NumberOfPillars-i; --k)
+        Pillars[k].state = SORTED;
 
-            for(int k=NumberOfPillars-1; k>=NumberOfPillars-i; --k)
-                Pillars[k].state = SORTED;
+    DrawVector(Pillars);
 
-            DrawVector(Pillars);
-
-            for (int k = j; k >= 0; --k)
-                Pillars[k].state = NORMAL;
-                    
-            EndDrawing();
-        }
-    }
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    std::cout<<"BubbleSort Time:"<<duration.count()<<std::endl;
-}
- 
-void QuickSort(std::vector<Pillar> &Pillars, int low=0, int high=NumberOfPillars-1){
-    if (low < high){
-        int i = (low - 1);
-        for (int j = low; j <= high - 1; j++)
-        {
-            if (Pillars[j].height < Pillars[high].height)
-            {
-                i++;
-                std::swap(Pillars[i], Pillars[j]);
-            }
-        }
-        std::swap(Pillars[i + 1], Pillars[high]);
-
-        BeginDrawing();
-        ClearBackground(WHITE);
-
-        DrawVector(Pillars);
-        // std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-        EndDrawing();
-
-        QuickSort(Pillars, low, i);
-        QuickSort(Pillars, i+2, high);
-    }
+    for (int k = j; k >= 0; --k)
+        Pillars[k].state = NORMAL;
+            
+    EndDrawing();
 }
 
 int main(){

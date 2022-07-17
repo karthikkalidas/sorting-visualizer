@@ -10,3 +10,7 @@
 - ./main
 ```
 <!-- - To add any new algorithm just update the source files using the same format  -->
+
+## TO DO
+- Need to cmake it
+- figure out the header file mess
